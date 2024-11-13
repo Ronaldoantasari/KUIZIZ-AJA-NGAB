@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Pengetahuan Umum </title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #ff66b3;
+        }
+        .question-box {
+            margin-top: 30px;
+        }
+        #countdown {
+            font-size: 25px;
+            font-weight: bold;
+        }
+        .heart-beat {
+            animation: heartbeat 1s infinite;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 10px 0;
+        }
+        .input-name {
+            font-size: 18px;
+        }
+        .input-box {
+            padding: 8px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Kuis milpung</h1>
+    <p>Masukkan nama Anda untuk memulai</p>
+    <input id="nameInput" type="text" class="input-box" placeholder="Nama Anda...">
+    <button class="button" id="startBtn">Mulai Kuis</button>
+
+    <div id="quizArea" class="hidden">
+        <h2 id="timer"></h2>
+        <div class="question-box">
+            <p id="question"></p>
+            <ul id="options" class="options"></ul>
+            <button class="button hidden" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <div id="result" class="hidden">
+        <h2>Hasil Kuis</h2>
+        <p>Nama: <span id="userName"></span></p>
+        <p>Skor: <span id="score"></span>/7</p>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "Apa peran Agus Salim dalam perjuangan kemerdekaan Indonesia?", options: ["Diplomat", "Penulis", "Gubernur", "Pengusaha"], answer: "Diplomat" },
+            { question: "Di mana Agus Salim lahir?", options: ["Jakarta", "Padang", "Bandung", "Surabaya"], answer: "Padang" },
+            { question: "Apa nama asli dari Agus Salim?", options: ["Moehammad Salim", "Mohammad Salim", "Agus Salim", "Salim Agustian"], answer: "Moehammad Salim" },
+            { question: "Apa julukan Agus Salim?", options: ["Pendekar Pena", "Orang Tua Gila", "Bapak Pendidikan", "Bapak Bahasa"], answer: "Orang Tua Gila" },
+            { question: "Apa yang dilakukan Agus Salim saat bekerja sebagai diplomat?", options: ["Mengajar", "Menggalang dukungan internasional", "Berdagang", "Menulis buku"], answer: "Menggalang dukungan internasional" },
+            { question: "Agus Salim yang lain sempat viral terkait insiden apa?", options: ["Dikarantina", "Disiram air keras", "Ditangkap", "Dilaporkan ke polisi"], answer: "Disiram air keras" },
+            { question: "Apa sikap Agus Salim yang dikenal sebagai ciri khasnya?", options: ["Sederhana", "Glamor", "Pendiam", "Tertutup"], answer: "Sederhana" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 30;
+        let userName;
+
+        document.getElementById("startBtn").addEventListener("click", startQuiz);
+
+        function startQuiz() {
+            userName = document.getElementById("nameInput").value;
+            if (userName === "") {
+                alert("Tolong masukkan nama terlebih dahulu.");
+                return;
+            }
+
+            document.getElementById("quizArea").classList.remove("hidden");
+            document.getElementById("startBtn").classList.add("hidden");
+            document.getElementById("userName").textContent = userName;
+            loadQuestion();
+            startTimer();
+        }
+
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            document.getElementById("question").textContent = currentQuestion.question;
+
+            const optionsList = document.getElementById("options");
+            optionsList.innerHTML = "";
+            currentQuestion.options.forEach(option => {
+                const li = document.createElement("li");
+                li.textContent = option;
+                li.addEventListener("click", checkAnswer);
+                optionsList.appendChild(li);
+            });
+
+            document.getElementById("nextBtn").classList.add("hidden");
+        }
+
+        function checkAnswer(e) {
+            const selectedOption = e.target.textContent;
+            const correctAnswer = questions[currentQuestionIndex].answer;
+
+            if (selectedOption === correctAnswer) {
+                score++;
+                e.target.style.backgroundColor = "#4CAF50"; // Green for correct answer
+            } else {
+                e.target.style.backgroundColor = "#F44336"; // Red for wrong answer
+            }
+
+            document.getElementById("nextBtn").classList.remove("hidden");
+        }
+
+        document.getElementById("nextBtn").addEventListener("click", function () {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+                resetTimer();
+            } else {
+                endQuiz();
+            }
+        });
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").textContent = `Waktu: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            startTimer();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+                resetTimer();
+            } else {
+                endQuiz();
+            }
+        }
+
+        function endQuiz() {
+            document.getElementById("quizArea").classList.add("hidden");
+            document.getElementById("result").classList.remove("hidden");
+            document.getElementById("score").textContent = score;
+        }
+    </script>
+</body>
+</html>
